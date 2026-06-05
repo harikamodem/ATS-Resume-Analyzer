@@ -1,0 +1,14 @@
+python
+sql
+pandas
+numpy
+machine learning
+deep learning
+power bi
+tableau
+excel
+git
+docker
+kubernetes
+java
+c++

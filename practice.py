@@ -95,3 +95,26 @@ def square(x):
     return x*x
 result = square(11)
 print(result)
+
+
+#sets
+
+skills = {"Python", "SQL", "Pandas", "Python"}
+print(skills)
+
+resume_skills = {"Python", "SQL", "Pandas"}
+jd_skills = {"Python", "SQL", "Docker"}
+#matched skills
+matched = resume_skills.intersection(jd_skills)
+print(matched)
+#missing skills
+missing = jd_skills - resume_skills
+print(missing)
+
+with open("data/skills.txt","r") as file:
+    skills = file.readlines()
+print(skills)
+
+with open("data/skills.txt","r") as file:
+    skills = [skill.strip() for skill in file]
+print(skills)
