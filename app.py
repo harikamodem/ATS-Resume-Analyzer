@@ -4,6 +4,10 @@ from utils.pdf_parser import extract_text_from_pdf
 from utils.text_cleaner import clean_text
 from utils.skill_extractor import extract_skills
 from utils.ats_scorer import calculate_ats_score
+from utils.skill_loader import load_skills
+from utils.skill_categorizer import categorize_skills
+from utils.skill_normalizer import normalize_skills
+from utils.recommendation_engine import generate_recommendations
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -25,25 +29,9 @@ cleaned_resume = clean_text(text)
 cleaned_jd = clean_text(job_description)
 
 # Skills Database
-skill_db = [
-    "python",
-    "c",
-    "c++",
-    "tensorflow",
-    "keras",
-    "pytorch",
-    "numpy",
-    "pandas",
-    "matlab",
-    "langchain",
-    "autocad",
-    "excel",
-    "sql",
-    "git",
-    "docker",
-    "machine learning",
-    "deep learning"
-]
+skill_db = load_skills(
+    "data/skills.txt"
+)
 
 # Extract Skills
 resume_skills = set(
@@ -60,9 +48,11 @@ jd_skills = set(
     )
 )
 
-# ATS Score
-score = calculate_ats_score(
-    resume_skills,
+#normalize skills
+resume_skills = normalize_skills(
+    resume_skills
+)
+jd_skills = normalize_skills(
     jd_skills
 )
 
@@ -72,12 +62,23 @@ st.subheader("Resume Skills")
 for skill in resume_skills:
     st.write("✅", skill)
 
-# Display JD Skills
-st.subheader("Job Description Skills")
 
-for skill in jd_skills:
-    st.write("📌", skill)
+categorized = categorize_skills(
+    resume_skills
+)
 
+st.subheader("Skill Categories")
+
+for category in categorized:
+    st.write(category)
+    for skill in categorized[category]:
+        st.write("•", skill)
+
+# ATS Score
+score = calculate_ats_score(
+    resume_skills,
+    jd_skills
+)
 # Display ATS Score
 st.subheader("ATS Score")
 
@@ -85,6 +86,13 @@ st.metric(
     "Match Percentage",
     f"{score:.1f}%"
 )
+
+# Display JD Skills
+st.subheader("Job Description Skills")
+
+for skill in jd_skills:
+    st.write("📌", skill)
+
 
 # Matched Skills
 matched_skills = resume_skills.intersection(
@@ -105,14 +113,12 @@ for skill in missing_skills:
     st.write("❌", skill)
 
 # Recommendations
+recommendations = generate_recommendations(
+    missing_skills
+)
 st.subheader("Recommendations")
-
-for skill in missing_skills:
-    st.write(
-        "👉 Add",
-        skill,
-        "to your resume"
-    )
+for recommendation in recommendations:
+    st.write("👉", recommendation)
 
 # Resume Grade
 if score >= 80:

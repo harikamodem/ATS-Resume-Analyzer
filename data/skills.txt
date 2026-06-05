@@ -1,14 +1,20 @@
 python
 sql
-pandas
+docker
+git
 numpy
+pandas
+tensorflow
+keras
+pytorch
 machine learning
 deep learning
+autocad
+matlab
+langchain
+excel
 power bi
 tableau
-excel
-git
-docker
-kubernetes
-java
+c
 c++
+java
