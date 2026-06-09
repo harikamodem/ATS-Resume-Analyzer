@@ -21,6 +21,12 @@ from utils.feedback_engine import (
 from utils.match_chart import (
     create_match_chart
 )
+from utils.resume_stats import (
+    resume_stats
+)
+from utils.quality_checker import (
+    quality_check
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -32,6 +38,15 @@ st.subheader("Job Description")
 job_description = st.text_area(
     "Paste Job Description Here",
     height=200
+)
+
+st.subheader(
+    "Upload Job Description PDF"
+)
+
+jd_file = st.file_uploader(
+    "Choose JD PDF",
+    type=["pdf"]
 )
 
 uploaded_file = st.file_uploader(
@@ -50,12 +65,75 @@ if uploaded_file:
     text = extract_text_from_pdf(
         "uploads/resume.pdf"
     )
+    st.success(
+        "Resume uploaded successfully."
+    )
+    st.subheader(
+        "Resume Preview"
+    )
+
+    st.success(
+        "Resume analyzed successfully."
+    )
+    st.text_area(
+    "Extracted Text",
+    text[:2000],
+    height=250
+    )
+    words, chars = resume_stats(
+    text
+    )
+
+    st.subheader(
+        "Resume Statistics"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "Words",
+            words
+        )
+
+    with col2:
+        st.metric(
+        "Characters",
+        chars
+        )
+
+    quality = quality_check(
+    words
+    )
+
+    st.subheader(
+        "Resume Quality"
+    )
+
+    st.info(
+        quality
+    )
+
+    if jd_file:
+
+        with open(
+        "uploads/jd.pdf",
+        "wb"
+        ) as f:
+
+            f.write(
+            jd_file.getbuffer()
+            )
+
+        job_description = extract_text_from_pdf(
+        "uploads/jd.pdf"
+        )
 
     cleaned_resume = clean_text(text)
     cleaned_jd = clean_text(job_description)
 
     skill_db = load_skills(
-    "data/skills.txt"
+        "data/skills.txt"
     )
 
     keyword_counts = keyword_count(
@@ -64,18 +142,18 @@ if uploaded_file:
     )
 
     st.subheader(
-    "Keyword Frequency"
+        "Keyword Frequency"
     )
     st.write(
-    keyword_counts
+        keyword_counts
     )
 
     top_skills = strongest_skills(
-    keyword_counts
+        keyword_counts
     )
 
     st.subheader(
-    "Top Skills"
+        "Top Skills"
     )
 
     for skill, count in top_skills:
