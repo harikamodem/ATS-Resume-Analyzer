@@ -27,6 +27,21 @@ from utils.resume_stats import (
 from utils.quality_checker import (
     quality_check
 )
+from utils.weighted_scorer import (
+    weighted_score
+)
+from utils.importance import (
+    get_importance
+)
+from utils.critical_skills import (
+    critical_missing
+)
+from utils.weight_chart import (
+    weight_chart
+)
+from utils.score_explainer import (
+    explain_score
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -199,10 +214,10 @@ if uploaded_file:
         st.write(category)
         for skill in categorized[category]:
             st.write("•", skill)
-
-    score = calculate_ats_score(
-    resume_skills,
-    jd_skills
+    
+    score = weighted_score(
+        resume_skills,
+        jd_skills
     )
 
     st.subheader("ATS Score")
@@ -211,18 +226,45 @@ if uploaded_file:
     "Match Percentage",
     f"{score:.1f}%"
     )
-
-    chart = create_score_chart(score)
+    
+    st.caption(
+    "Weighted ATS Score"
+    )
+    
+    gauge_chart = create_score_chart(
+        score
+    )
 
     st.plotly_chart(
-    chart,
-    use_container_width=True
+        gauge_chart,
+        use_container_width=True
     )
 
     st.subheader("Job Description Skills")
 
     for skill in jd_skills:
         st.write("📌", skill)
+    
+    importance = get_importance(
+        jd_skills
+    )
+
+    st.subheader(
+        "Skill Importance"
+    )
+
+    for skill, weight in importance.items():
+        st.write(
+            f"{skill} → {weight} points"
+        )
+    
+    chart = weight_chart(
+        importance
+    )
+    st.plotly_chart(
+        chart,
+        use_container_width=True
+    )
 
     matched_skills = resume_skills.intersection(
     jd_skills
@@ -239,6 +281,20 @@ if uploaded_file:
 
     for skill in missing_skills:
         st.write("❌", skill)
+    
+    critical = critical_missing(
+        missing_skills
+    )
+
+    st.subheader(
+        "Critical Missing Skills"
+    )
+
+    for skill in critical:
+        st.error(
+            f"High Priority: {skill}"
+        )
+
 
     pie_chart = create_match_chart(
     matched_skills,
@@ -264,15 +320,27 @@ if uploaded_file:
     "ATS Feedback"
     )
     st.info(feedback)
+    
+    st.subheader(
+    "Score Interpretation"
+    )
 
-    if score >= 80:
-        grade = "Excellent"
+    st.info(
+        explain_score(
+            score
+        )
+    )
+
+    if score >= 90:
+        grade = "A"
+    elif score >= 80:
+        grade = "B"
+    elif score >= 70:
+        grade = "C"
     elif score >= 60:
-        grade = "Good"
-    elif score >= 40:
-        grade = "Average"
+        grade = "D"
     else:
-        grade = "Needs Improvement"
+        grade = "F"
 
     st.subheader("Resume Grade")
     st.success(grade)
