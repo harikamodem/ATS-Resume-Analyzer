@@ -42,6 +42,21 @@ from utils.weight_chart import (
 from utils.score_explainer import (
     explain_score
 )
+from utils.section_detector import (
+    detect_sections
+)
+from utils.section_score import (
+    section_score
+)
+from utils.structure_grade import (
+    structure_grade
+)
+from utils.missing_sections import (
+    missing_sections
+)
+from utils.section_chart import (
+    section_chart
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -77,12 +92,15 @@ if uploaded_file:
         f.write(
             uploaded_file.getbuffer()
         )
+
     text = extract_text_from_pdf(
         "uploads/resume.pdf"
     )
+
     st.success(
         "Resume uploaded successfully."
     )
+
     st.subheader(
         "Resume Preview"
     )
@@ -90,13 +108,15 @@ if uploaded_file:
     st.success(
         "Resume analyzed successfully."
     )
+
     st.text_area(
-    "Extracted Text",
-    text[:2000],
-    height=250
+        "Extracted Text",
+        text[:2000],
+        height=250
     )
+
     words, chars = resume_stats(
-    text
+        text
     )
 
     st.subheader(
@@ -113,12 +133,12 @@ if uploaded_file:
 
     with col2:
         st.metric(
-        "Characters",
-        chars
+            "Characters",
+            chars
         )
 
     quality = quality_check(
-    words
+        words
     )
 
     st.subheader(
@@ -129,31 +149,111 @@ if uploaded_file:
         quality
     )
 
+    cleaned_resume = clean_text(text)
+    sections = detect_sections(
+        text
+    )
+
+    section_percentage = section_score(
+        sections
+    )
+
+    cleaned_jd = clean_text(job_description)
+
+    st.subheader(
+        "Resume Sections"
+    )
+
+    for section, present in sections.items():
+
+        if present:
+
+            st.success(
+                f"{section} Found"
+            )
+
+        else:
+
+            st.error(
+                f"{section} Missing"
+            )
+
+    st.subheader(
+        "Resume Structure Score"
+    )
+
+    st.metric(
+        "Section Completeness",
+        f"{section_percentage:.1f}%"
+    )
+
+    st.success(
+        structure_grade(
+            section_percentage
+        )
+    )
+
+    missing = missing_sections(
+        sections
+    )
+
+    st.subheader(
+        "Missing Resume Sections"
+    )
+
+    for item in missing:
+
+        st.warning(
+            item
+        )
+
+    chart = section_chart(
+        sections
+    )
+
+    st.plotly_chart(
+        chart,
+        use_container_width=True
+    )
+
+    if len(missing) > 0:
+
+       st.subheader(
+           "Structure Recommendations"
+       )
+
+       for item in missing:
+
+            st.write(
+                f"Add {item} section"
+            )
+
     if jd_file:
 
         with open(
-        "uploads/jd.pdf",
-        "wb"
+            "uploads/jd.pdf",
+            "wb"
         ) as f:
 
             f.write(
-            jd_file.getbuffer()
+                jd_file.getbuffer()
             )
 
         job_description = extract_text_from_pdf(
-        "uploads/jd.pdf"
+            "uploads/jd.pdf"
         )
 
-    cleaned_resume = clean_text(text)
-    cleaned_jd = clean_text(job_description)
+    cleaned_jd = clean_text(
+        job_description
+    )
 
     skill_db = load_skills(
         "data/skills.txt"
     )
 
     keyword_counts = keyword_count(
-    cleaned_resume,
-    skill_db
+        cleaned_resume,
+        skill_db
     )
 
     st.subheader(
@@ -174,28 +274,29 @@ if uploaded_file:
     for skill, count in top_skills:
         if count > 0:
             st.write(
-            f"⭐ {skill} ({count})"
+                f"⭐ {skill} ({count})"
         )
 
     resume_skills = set(
         extract_skills(
-        cleaned_resume,
-        skill_db
+            cleaned_resume,
+            skill_db
         )
     )
 
     jd_skills = set(
         extract_skills(
-        cleaned_jd,
-        skill_db
+            cleaned_jd,
+            skill_db
         )
     )
 
     resume_skills = normalize_skills(
-    resume_skills
+        resume_skills
     )
+
     jd_skills = normalize_skills(
-    jd_skills
+        jd_skills
     )
 
     st.subheader("Resume Skills")
@@ -203,9 +304,8 @@ if uploaded_file:
     for skill in resume_skills:
         st.write("✅", skill)
 
-
     categorized = categorize_skills(
-    resume_skills
+        resume_skills
     )
 
     st.subheader("Skill Categories")
@@ -223,12 +323,12 @@ if uploaded_file:
     st.subheader("ATS Score")
 
     st.metric(
-    "Match Percentage",
-    f"{score:.1f}%"
+        "Match Percentage",
+        f"{score:.1f}%"
     )
     
     st.caption(
-    "Weighted ATS Score"
+        "Weighted ATS Score"
     )
     
     gauge_chart = create_score_chart(
@@ -267,7 +367,7 @@ if uploaded_file:
     )
 
     matched_skills = resume_skills.intersection(
-    jd_skills
+        jd_skills
     )
 
     st.subheader("Matched Skills")
@@ -297,32 +397,35 @@ if uploaded_file:
 
 
     pie_chart = create_match_chart(
-    matched_skills,
-    missing_skills
+        matched_skills,
+        missing_skills
     )
+
     st.plotly_chart(
-    pie_chart,
-    use_container_width=True
+        pie_chart,
+        use_container_width=True
     )
 
     recommendations = generate_recommendations(
-    missing_skills
+        missing_skills
     )
+
     st.subheader("Recommendations")
     for recommendation in recommendations:
         st.write("👉", recommendation)
 
     feedback = generate_feedback(
-    score
+        score
     )
 
     st.subheader(
-    "ATS Feedback"
+        "ATS Feedback"
     )
+
     st.info(feedback)
     
     st.subheader(
-    "Score Interpretation"
+        "Score Interpretation"
     )
 
     st.info(
@@ -348,12 +451,12 @@ if uploaded_file:
     col1, col2 = st.columns(2)
     with col1:
         st.metric(
-        "ATS Score",
-        f"{score:.1f}%"
+            "ATS Score",
+            f"{score:.1f}%"
         )
     with col2:
         st.success(
-        grade
+            grade
         )
 
 
