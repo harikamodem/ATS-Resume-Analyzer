@@ -72,6 +72,63 @@ from utils.keyword_stuffing import (
 from utils.ai_recommendation import (
     ai_recommendation
 )
+from utils.project_detector import (
+    detect_projects
+)
+from utils.project_score import (
+    project_score
+)
+from utils.project_feedback import (
+    project_feedback
+)
+from utils.experience_detector import (
+    detect_experience
+)
+from utils.experience_score import (
+    experience_score
+)
+from utils.career_score import (
+    career_score
+)
+from utils.education_detector import (
+    detect_education
+)
+from utils.education_score import (
+    education_score
+)
+from utils.cgpa_detector import (
+    detect_cgpa
+)
+from utils.cgpa_rating import (
+    cgpa_rating
+)
+from utils.resume_ranker import (
+    resume_ranker
+)
+from utils.hiring_decision import (
+    hiring_decision
+)
+from utils.report_generator import (
+    generate_report
+)
+from utils.name_extractor import (
+    extract_name
+)
+from utils.keyword_density import (
+    keyword_density
+)
+from utils.benchmark import (
+    benchmark_score
+)
+from utils.ats_optimizer import (
+    ats_optimizer
+)
+from utils.risk_detector import (
+    risk_detector
+)
+from utils.recruiter_dashboard import (
+    recruiter_dashboard
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -112,6 +169,10 @@ if uploaded_file:
         "uploads/resume.pdf"
     )
 
+    candidate_name = extract_name(
+        text
+    )
+
     st.success(
         "Resume uploaded successfully."
     )
@@ -134,8 +195,92 @@ if uploaded_file:
         text
     )
 
+    project_count = detect_projects(
+        text
+    )
+
     st.subheader(
         "Resume Statistics"
+    )
+
+    st.metric(
+        "Projects Found",
+        project_count
+    )
+
+    proj_score = project_score(
+        project_count
+    )
+
+    st.subheader(
+        "Project Strength"
+    )
+
+    st.metric(
+        "Project Score",
+        f"{proj_score}%"
+    )
+
+    st.info(
+        project_feedback(
+            proj_score
+        )
+    )
+
+    experience_count = detect_experience(
+        text
+    )
+
+    st.subheader(
+        "Experience Analysis"
+    )
+
+    st.metric(
+        "Experience Indicators",
+        experience_count
+    )
+
+    exp_score = experience_score(
+        experience_count
+    )
+
+    st.metric(
+        "Experience Score",
+        f"{exp_score}%"
+    )
+
+    career = career_score(
+        proj_score,
+        exp_score
+    )
+
+    st.subheader(
+        "Career Readiness"
+    )
+
+    st.metric(
+        "Career Score",
+        f"{career}%"
+    )
+
+    cgpa = detect_cgpa(
+        text
+    )
+
+    st.subheader(
+        "CGPA Analysis"
+    )
+
+    if cgpa:
+        st.metric(
+            "CGPA",
+            cgpa
+        )
+
+    st.success(
+        cgpa_rating(
+            cgpa
+        )
     )
 
     col1, col2 = st.columns(2)
@@ -154,6 +299,28 @@ if uploaded_file:
 
     quality = quality_check(
         words
+    )
+
+    education = detect_education(
+        text
+    )
+
+    st.subheader(
+        "Education Analysis"
+    )
+
+    for item in education:
+        st.success(
+            item.upper()
+        )
+
+    edu_score = education_score(
+        education
+    )
+
+    st.metric(
+        "Education Score",
+        f"{edu_score}%"
     )
 
     st.subheader(
@@ -327,6 +494,21 @@ if uploaded_file:
         "Top Skills"
     )
 
+    st.subheader(
+        "Keyword Density"
+    )
+
+    for skill, count in top_skills:
+        if count > 0:
+            density = keyword_density(
+            cleaned_resume,
+            skill
+        )
+            
+            st.write(
+                f"{skill} → {density}%"
+            )
+
     for skill, count in top_skills:
         if count > 0:
             st.write(
@@ -382,14 +564,26 @@ if uploaded_file:
         "Match Percentage",
         f"{score:.1f}%"
     )
+
+    status, average = benchmark_score(
+        score
+    )
+
+    st.subheader(
+       "Industry Benchmark"
+    )
+
+    st.metric(
+        "Industry Average",
+        f"{average}%"
+    )
+
+    st.success(
+        status
+    )
     
     st.caption(
         "Weighted ATS Score"
-    )
-
-    semantic_score = semantic_match(
-        text,
-        job_description
     )
 
     st.subheader(
@@ -400,6 +594,20 @@ if uploaded_file:
         "AI Similarity",
         f"{semantic_score:.1f}%"
     )
+
+    risks = risk_detector(
+        score,
+        semantic_score
+    )
+
+    st.subheader(
+        "Recruiter Risk Flags"
+    )
+
+    for risk in risks:
+        st.error(
+            risk
+        )
     
     st.subheader(
         "ATS vs AI Match"
@@ -502,6 +710,19 @@ if uploaded_file:
     for recommendation in recommendations:
         st.write("👉", recommendation)
 
+    optimizer = ats_optimizer(
+        score,
+        missing_skills
+    )
+
+    st.subheader(
+        "ATS Optimization"
+    )
+    for item in optimizer:
+        st.warning(
+            item
+        )
+    
     feedback = generate_feedback(
         score
     )
@@ -547,5 +768,84 @@ if uploaded_file:
             grade
         )
 
+    final_rank = resume_ranker(
+        score,
+        semantic_score,
+        career,
+        edu_score
+    )
+
+    dashboard = recruiter_dashboard(
+        score,
+        semantic_score,
+        career,
+        edu_score,
+        final_rank
+    )
+
+    st.subheader(
+        "Recruiter Dashboard"
+    )
+
+    st.plotly_chart(
+        dashboard,
+        use_container_width=True
+    )
+
+    st.subheader(
+        "Resume Ranking"
+    )
+
+    st.metric(
+        "Overall Rank Score",
+        f"{final_rank}%"
+    )
+
+    st.subheader(
+    "Hiring Recommendation"
+    )
+
+    st.success(
+        hiring_decision(
+            final_rank
+        )
+    )
+
+    if st.button(
+        "Generate PDF Report"
+    ):
+        decision = hiring_decision(
+            final_rank
+        )
+
+        generate_report(
+            candidate_name,    
+            score,
+            semantic_score,
+            grade,
+            final_rank,
+            decision,
+            list(resume_skills),
+            list(missing_skills),
+            recommendations,
+            career,
+            edu_score
+        )
+
+        st.success(
+             "Report Generated"
+        )
+
+    with open(
+        "report.pdf",
+        "rb"
+    ) as file:
+
+        st.download_button(
+            "Download Report",
+            file,
+            file_name="Resume_Report.pdf"
+        )
 
 
+     
