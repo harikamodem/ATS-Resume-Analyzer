@@ -57,6 +57,21 @@ from utils.missing_sections import (
 from utils.section_chart import (
     section_chart
 )
+from utils.semantic_match import (
+    semantic_match
+)
+from utils.semantic_chart import (
+    semantic_chart
+)
+from utils.semantic_feedback import (
+    semantic_feedback
+)
+from utils.keyword_stuffing import (
+    keyword_stuffing
+)
+from utils.ai_recommendation import (
+    ai_recommendation
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -159,6 +174,40 @@ if uploaded_file:
     )
 
     cleaned_jd = clean_text(job_description)
+
+    semantic_score = semantic_match(
+        text,
+        job_description
+    )
+
+    chart = semantic_chart(
+        semantic_score
+    )
+
+    st.plotly_chart(
+        chart,
+        use_container_width=True
+    )
+
+    st.subheader(
+        "AI Analysis"
+    )
+
+    st.info(
+        semantic_feedback(
+            semantic_score
+        )
+    )
+
+    st.subheader(
+        "AI Recommendation"
+    )
+
+    st.success(
+        ai_recommendation(
+            semantic_score
+        )
+    )
 
     st.subheader(
         "Resume Sections"
@@ -267,6 +316,13 @@ if uploaded_file:
         keyword_counts
     )
 
+    if keyword_stuffing(
+        keyword_counts
+    ):
+        st.warning(
+            "Possible keyword stuffing detected."
+        )
+
     st.subheader(
         "Top Skills"
     )
@@ -330,7 +386,39 @@ if uploaded_file:
     st.caption(
         "Weighted ATS Score"
     )
+
+    semantic_score = semantic_match(
+        text,
+        job_description
+    )
+
+    st.subheader(
+       "Semantic Match Score"
+    )
+
+    st.metric(
+        "AI Similarity",
+        f"{semantic_score:.1f}%"
+    )
     
+    st.subheader(
+        "ATS vs AI Match"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "ATS Score",
+            f"{score:.1f}%"
+        )
+
+    with col2:
+        st.metric(
+            "AI Score",
+            f"{semantic_score:.1f}%"
+        )
+
     gauge_chart = create_score_chart(
         score
     )
