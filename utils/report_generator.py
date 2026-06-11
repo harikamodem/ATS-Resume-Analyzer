@@ -22,7 +22,9 @@ def generate_report(
     recommendations,
     career,
     edu_score,
-    impact
+    impact,
+    profile,
+    tech_score
 ):
 
     pdf = SimpleDocTemplate(
@@ -191,6 +193,26 @@ def generate_report(
         )
     )
 
+    content.append(
+        Paragraph(
+            "Candidate Profile Analysis",
+            styles["Heading1"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Profile: {profile}",
+            styles["BodyText"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Technical Score: {tech_score}%",
+            styles["BodyText"]
+        )
+    )
 
     pdf.build(
         content

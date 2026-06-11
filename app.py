@@ -144,6 +144,24 @@ from utils.achievement_rating import (
 from utils.achievement_chart import (
     achievement_chart
 )
+from utils.strengths_analyzer import (
+    analyze_strengths
+)
+from utils.weaknesses_analyzer import (
+    analyze_weaknesses
+)
+from utils.candidate_profile import (
+    candidate_profile
+)
+from utils.technical_score import (
+    technical_score
+)
+from utils.swot_analysis import (
+    swot_analysis
+)
+from utils.recruiter_summary import (
+    recruiter_summary
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -851,6 +869,98 @@ if uploaded_file:
         impact
     ) / 5
 
+    strengths = analyze_strengths(
+        score,
+        semantic_score,
+        proj_score,
+        impact
+    )
+
+    st.subheader(
+        "Resume Strengths"
+    )
+
+    for item in strengths:
+        st.success(
+            item
+        )
+
+    weaknesses = analyze_weaknesses(
+        score,
+        missing_skills,
+        exp_score
+    )
+
+    st.subheader(
+        "Resume Waknesses"
+    )
+
+    for item in weaknesses:
+        st.warning(
+            item
+        )
+
+    profile = candidate_profile(
+        career,
+        impact,
+        semantic_score
+    )
+
+    st.subheader(
+        "Candidate Profile"
+    )
+
+    st.info(
+        profile
+    )
+
+    tech_score = technical_score(
+        score,
+        semantic_score,
+        proj_score
+    )
+
+    st.subheader(
+        "Technical Profile"
+    )
+
+    st.metric(
+        "Technical Score",
+        f"{tech_score}%"
+    )
+
+    swot = swot_analysis(
+        strengths,
+        weaknesses
+    )
+
+    st.subheader(
+        "SWOT Analysis"
+    )
+
+    for key, values in swot.items():
+        st.write(
+            f"### {key}"
+        )
+
+        for item in values:
+            st.write(
+                f".{item}"
+            )
+    
+    summary = recruiter_summary(
+        profile,
+        final_rank
+    )
+
+    st.subheader(
+        "Recruiter Summary"
+    )
+
+    st.info(
+        summary
+    )
+    
     dashboard = recruiter_dashboard(
         score,
         semantic_score,
