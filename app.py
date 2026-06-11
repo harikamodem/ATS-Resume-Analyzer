@@ -162,6 +162,18 @@ from utils.swot_analysis import (
 from utils.recruiter_summary import (
     recruiter_summary
 )
+from utils.batch_analyzer import (
+    batch_analyzer
+)
+from utils.candidate_comparator import (
+    candidate_comparator
+)
+from utils.shortlist_engine import (
+    shortlist_engine
+)
+from utils.leaderboard_chart import (
+    leaderboard_chart
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -188,6 +200,12 @@ uploaded_file = st.file_uploader(
     "Choose Resume PDF",
     type=["pdf"]
 ) 
+
+multiple_resumes = st.file_uploader(
+    "Upload Multiple Resumes",
+    type = ["pdf"],
+    accept_multiple_files=True
+)
 
 if uploaded_file:
     with open(
@@ -287,12 +305,6 @@ if uploaded_file:
         exp_score
     )
 
-    achievement_count = (
-        detect_achievements(
-            text
-        )
-    )
-
     st.subheader(
         "Career Readiness"
     )
@@ -369,12 +381,17 @@ if uploaded_file:
             "CGPA",
             cgpa
         )
-
-    st.success(
-        cgpa_rating(
-            cgpa
+        
+        st.success(
+            cgpa_rating(
+                cgpa
+            )
         )
-    )
+
+    else:
+        st.warning(
+            "CGPA Not Found"
+        )
 
     col1, col2 = st.columns(2)
 
@@ -892,7 +909,7 @@ if uploaded_file:
     )
 
     st.subheader(
-        "Resume Waknesses"
+        "Resume Weaknesses"
     )
 
     for item in weaknesses:
@@ -945,7 +962,7 @@ if uploaded_file:
 
         for item in values:
             st.write(
-                f".{item}"
+                f"• {item}"
             )
     
     summary = recruiter_summary(
@@ -991,6 +1008,89 @@ if uploaded_file:
     "Hiring Recommendation"
     )
 
+    if multiple_resumes:
+        st.subheader(
+            "Multi Resume Comparison"
+        )
+
+        st.warning(
+            "Batch ranking currently uses the active resume metrics. Day 19 will add independent analysis for each uploaded resume."
+        )
+
+        candidates = []
+
+        for resume in multiple_resumes:
+            candidate = {
+                "name":
+                resume.name.replace(
+                    ".pdf",
+                    ""
+                ),
+                "ats":
+                score,
+                "semantic":
+                semantic_score,
+                "career":
+                career,
+                "education":
+                edu_score
+            }
+            candidates.append(
+                candidate
+            )
+        results = batch_analyzer(
+            candidates
+        )
+        results = candidate_comparator(
+            results
+        )
+        st.subheader(
+            "Candidate Leaderboard"
+        )
+        for i, candidate in enumerate(
+            results,
+            start=1
+        ):
+            st.write(
+                f"{i}. "
+                f"{candidate['name']} "
+                f"{candidate['rank']:.1f}%"
+            )
+    
+        chart = leaderboard_chart(
+            results
+        )
+        
+        st.plotly_chart(
+            chart,
+            use_container_width=True
+        )
+        
+        shortlisted = shortlist_engine(
+            results
+        )
+        
+        st.subheader(
+            "Recruiter Shortlist"
+        )
+
+        for candidate in shortlisted:
+            st.success(
+                candidate["name"]
+            )
+
+        if len(results) > 0:
+            top_candidate = results[0]
+         
+            st.subheader(
+                "Top Candidate"
+            )
+            
+            st.success(
+                f"{top_candidate['name']} "
+                f"({top_candidate['rank']:.1f}%)"
+            )
+
     st.success(
         hiring_decision(
             final_rank
@@ -1016,7 +1116,9 @@ if uploaded_file:
             recommendations,
             career,
             edu_score,
-            impact
+            impact,
+            profile,
+            tech_score
         )
 
         st.success(
@@ -1033,6 +1135,7 @@ if uploaded_file:
             file,
             file_name="Resume_Report.pdf"
         )
+
 
 
      

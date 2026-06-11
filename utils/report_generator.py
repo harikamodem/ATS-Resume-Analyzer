@@ -24,7 +24,8 @@ def generate_report(
     edu_score,
     impact,
     profile,
-    tech_score
+    tech_score,
+    shortlist
 ):
 
     pdf = SimpleDocTemplate(
@@ -213,6 +214,21 @@ def generate_report(
             styles["BodyText"]
         )
     )
+
+    content.append(
+        Paragraph(
+            "Recruiter Shortlist",
+            styles["Heading1"]
+        )
+    )
+
+    for candidate in shortlist:
+        content.append(
+            Paragraph(
+                candidate,
+                styles["BodyText"]
+            )
+        )
 
     pdf.build(
         content
