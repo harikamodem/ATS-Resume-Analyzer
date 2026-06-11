@@ -21,7 +21,8 @@ def generate_report(
     missing_skills,
     recommendations,
     career,
-    edu_score
+    edu_score,
+    impact
 ):
 
     pdf = SimpleDocTemplate(
@@ -175,6 +176,21 @@ def generate_report(
             styles["BodyText"]
         )
     )
+
+    content.append(
+        Paragraph(
+            "Achievemnet Analysis",
+            styles["Heading1"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Imapct Score: {impact}%",
+            styles["BodyText"]
+        )
+    )
+
 
     pdf.build(
         content

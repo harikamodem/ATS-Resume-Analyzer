@@ -129,6 +129,21 @@ from utils.risk_detector import (
 from utils.recruiter_dashboard import (
     recruiter_dashboard
 )
+from utils.achievement_detector import (
+    detect_achievements
+)
+from utils.impact_score import (
+    impact_score
+)
+from utils.action_verbs import (
+    action_verbs
+)
+from utils.achievement_rating import (
+    achievement_rating
+)
+from utils.achievement_chart import (
+    achievement_chart
+)
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -254,6 +269,12 @@ if uploaded_file:
         exp_score
     )
 
+    achievement_count = (
+        detect_achievements(
+            text
+        )
+    )
+
     st.subheader(
         "Career Readiness"
     )
@@ -263,6 +284,60 @@ if uploaded_file:
         f"{career}%"
     )
 
+    achievement_count = (
+        detect_achievements(
+            text
+        )
+    )
+
+    st.subheader(
+        "Achievement Analysis"
+    )
+
+    st.metric(
+        "Achievements Found",
+        achievement_count
+    )
+
+    impact = impact_score(
+        achievement_count
+    )
+
+    st.metric(
+        "Impact Score",
+        f"{impact}%"
+    )
+
+    st.success(
+        achievement_rating(
+            impact
+        )
+    )
+
+    verbs = action_verbs()
+
+    st.subheader(
+        "Action Verb Analysis"
+    )
+
+    for verb in verbs:
+        count = text.lower().count(
+            verb
+        )
+        if count > 0:
+            st.write(
+                f"{verb}: {count}"
+            )
+
+    chart = achievement_chart(
+        impact
+    )
+
+    st.plotly_chart(
+        chart,
+        use_container_width=True
+    )
+    
     cgpa = detect_cgpa(
         text
     )
@@ -768,12 +843,13 @@ if uploaded_file:
             grade
         )
 
-    final_rank = resume_ranker(
-        score,
-        semantic_score,
-        career,
-        edu_score
-    )
+    final_rank = (
+        score +
+        semantic_score +
+        career +
+        edu_score +
+        impact
+    ) / 5
 
     dashboard = recruiter_dashboard(
         score,
@@ -829,7 +905,8 @@ if uploaded_file:
             list(missing_skills),
             recommendations,
             career,
-            edu_score
+            edu_score,
+            impact
         )
 
         st.success(
