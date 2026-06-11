@@ -25,7 +25,9 @@ def generate_report(
     impact,
     profile,
     tech_score,
-    shortlist
+    shortlist,
+    top3,
+    candidate_count
 ):
 
     pdf = SimpleDocTemplate(
@@ -230,6 +232,20 @@ def generate_report(
             )
         )
 
+    content.append(
+        Paragraph(
+            "Batch Analysis",
+            styles["Heading1"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Candidates Analyzed: {candidate_count}",
+            styles["BodyText"]
+        )
+    )
+    
     pdf.build(
         content
     )

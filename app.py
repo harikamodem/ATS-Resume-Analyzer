@@ -174,6 +174,19 @@ from utils.shortlist_engine import (
 from utils.leaderboard_chart import (
     leaderboard_chart
 )
+from utils.resume_pipeline import (
+    resume_pipeline
+)
+from utils.batch_processor import (
+    batch_processor
+)
+from utils.top_candidates import (
+    top_candidates
+)
+from utils.hiring_pipeline import (
+    hiring_pipeline
+)
+
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -1007,95 +1020,90 @@ if uploaded_file:
     st.subheader(
     "Hiring Recommendation"
     )
-
-    if multiple_resumes:
-        st.subheader(
-            "Multi Resume Comparison"
-        )
-
-        st.warning(
-            "Batch ranking currently uses the active resume metrics. Day 19 will add independent analysis for each uploaded resume."
-        )
-
-        candidates = []
-
-        for resume in multiple_resumes:
-            candidate = {
-                "name":
-                resume.name.replace(
-                    ".pdf",
-                    ""
-                ),
-                "ats":
-                score,
-                "semantic":
-                semantic_score,
-                "career":
-                career,
-                "education":
-                edu_score
-            }
-            candidates.append(
-                candidate
-            )
-        results = batch_analyzer(
-            candidates
-        )
-        results = candidate_comparator(
-            results
-        )
-        st.subheader(
-            "Candidate Leaderboard"
-        )
-        for i, candidate in enumerate(
-            results,
-            start=1
-        ):
-            st.write(
-                f"{i}. "
-                f"{candidate['name']} "
-                f"{candidate['rank']:.1f}%"
-            )
-    
-        chart = leaderboard_chart(
-            results
-        )
-        
-        st.plotly_chart(
-            chart,
-            use_container_width=True
-        )
-        
-        shortlisted = shortlist_engine(
-            results
-        )
-        
-        st.subheader(
-            "Recruiter Shortlist"
-        )
-
-        for candidate in shortlisted:
-            st.success(
-                candidate["name"]
-            )
-
-        if len(results) > 0:
-            top_candidate = results[0]
-         
-            st.subheader(
-                "Top Candidate"
-            )
-            
-            st.success(
-                f"{top_candidate['name']} "
-                f"({top_candidate['rank']:.1f}%)"
-            )
-
+   
     st.success(
         hiring_decision(
             final_rank
         )
     )
+
+    if multiple_resumes:
+        st.subheader(
+            "Batch Resume Analysis"
+        )
+
+        skill_db = load_skills(
+            "data/skills.txt"
+        )
+
+        candidates = batch_processor(
+            multiple_resumes,
+            job_description,
+            skill_db,
+            extract_text_from_pdf
+        )
+
+        candidates = sorted(
+            candidates,
+            key=lambda x: x["score"],
+            reverse=True
+        )
+
+        st.subheader(
+            "Candidate Leaderboard"
+        )
+
+        for i, candidate in enumerate(
+            candidates,
+            start=1
+        ):
+            st.write(
+                f"{i}. "
+                f"{candidate['name']} "
+                f"({candidate['score']}%)"
+            )
+
+        top3 = top_candidates(
+            candidates
+        )
+
+        st.subheader(
+            "Top 3 Candidates"
+        )
+
+        for candidate in top3:
+            st.success(
+                candidate["name"]
+            )
+
+        st.subheader(
+            "Hiring Pipeline"
+        )
+
+        for candidate in candidates:
+            stage = hiring_pipeline(
+                candidate["score"]
+            )
+
+            st.write(
+                f"{candidate['name']} → {stage}"
+            )
+
+        chart = leaderboard_chart(
+            [
+                {
+                    "name": c["name"],
+                    "rank": c["score"]
+                }
+                for c in candidates
+            ]
+        )
+
+        st.plotly_chart(
+            chart,
+            use_container_width=True
+        )
+
 
     if st.button(
         "Generate PDF Report"
