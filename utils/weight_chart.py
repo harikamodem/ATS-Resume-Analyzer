@@ -1,12 +1,20 @@
+import pandas as pd
 import plotly.express as px
-def weight_chart(
-        importance):
+
+def weight_chart(weights):
+
+    df = pd.DataFrame({
+
+        "Skill": list(weights.keys()),
+        "Weight": list(weights.values())
+
+    })
+
     fig = px.bar(
-        x=list(
-            importance.keys()
-        ),
-        y=list(
-            importance.values()
-        )
+        df,
+        x="Skill",
+        y="Weight",
+        title="Skill Importance"
     )
+
     return fig

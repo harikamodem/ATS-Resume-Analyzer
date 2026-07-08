@@ -1,0 +1,1 @@
+Note: This application supports text-based PDF resumes. Scanned or image-only PDFs are not supported because they do not contain selectable text.

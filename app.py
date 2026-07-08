@@ -3,7 +3,6 @@ import streamlit as st
 from utils.pdf_parser import extract_text_from_pdf
 from utils.text_cleaner import clean_text
 from utils.skill_extractor import extract_skills
-from utils.ats_scorer import calculate_ats_score
 from utils.skill_loader import load_skills
 from utils.skill_categorizer import categorize_skills
 from utils.skill_normalizer import normalize_skills
@@ -102,9 +101,6 @@ from utils.cgpa_detector import (
 from utils.cgpa_rating import (
     cgpa_rating
 )
-from utils.resume_ranker import (
-    resume_ranker
-)
 from utils.hiring_decision import (
     hiring_decision
 )
@@ -162,20 +158,8 @@ from utils.swot_analysis import (
 from utils.recruiter_summary import (
     recruiter_summary
 )
-from utils.batch_analyzer import (
-    batch_analyzer
-)
-from utils.candidate_comparator import (
-    candidate_comparator
-)
-from utils.shortlist_engine import (
-    shortlist_engine
-)
 from utils.leaderboard_chart import (
     leaderboard_chart
-)
-from utils.resume_pipeline import (
-    resume_pipeline
 )
 from utils.batch_processor import (
     batch_processor
@@ -186,7 +170,19 @@ from utils.top_candidates import (
 from utils.hiring_pipeline import (
     hiring_pipeline
 )
-
+from utils.history_manager import (
+    save_history
+)
+from utils.performance_dashboard import (
+    performance_dashboard
+)
+from utils.logger import (
+    log_event
+)
+from utils.project_info import (
+    project_info
+)
+from datetime import datetime
 
 st.title("AI Resume Analyzer & ATS Scoring System")
 
@@ -233,12 +229,30 @@ if uploaded_file:
         "uploads/resume.pdf"
     )
 
+    if not text.strip():
+
+        st.error(
+            """
+            No selectable text was found in this PDF.
+
+            Please upload a text-based PDF resume.
+            Scanned or image-only PDFs are not supported.
+            """
+        )
+
+        st.stop()
+
     candidate_name = extract_name(
         text
     )
 
+
     st.success(
         "Resume uploaded successfully."
+    )
+
+    log_event(
+        f"Resume uploaded : {candidate_name}"
     )
 
     st.subheader(
@@ -251,7 +265,7 @@ if uploaded_file:
 
     st.text_area(
         "Extracted Text",
-        text[:2000],
+        text[:3000],
         height=250
     )
 
@@ -463,7 +477,21 @@ if uploaded_file:
         sections
     )
 
-    cleaned_jd = clean_text(job_description)
+
+    if jd_file:
+
+        with open(
+            "uploads/jd.pdf",
+            "wb"
+        ) as f:
+
+            f.write(
+                jd_file.getbuffer()
+            )
+
+        job_description = extract_text_from_pdf(
+            "uploads/jd.pdf"
+        )
 
     semantic_score = semantic_match(
         text,
@@ -567,21 +595,6 @@ if uploaded_file:
                 f"Add {item} section"
             )
 
-    if jd_file:
-
-        with open(
-            "uploads/jd.pdf",
-            "wb"
-        ) as f:
-
-            f.write(
-                jd_file.getbuffer()
-            )
-
-        job_description = extract_text_from_pdf(
-            "uploads/jd.pdf"
-        )
-
     cleaned_jd = clean_text(
         job_description
     )
@@ -636,7 +649,7 @@ if uploaded_file:
         if count > 0:
             st.write(
                 f"⭐ {skill} ({count})"
-        )
+            )
 
     resume_skills = set(
         extract_skills(
@@ -899,6 +912,13 @@ if uploaded_file:
         impact
     ) / 5
 
+    save_history(
+        candidate_name,
+        score,
+        semantic_score,
+        final_rank
+    )
+
     strengths = analyze_strengths(
         score,
         semantic_score,
@@ -1105,6 +1125,20 @@ if uploaded_file:
         )
 
 
+    st.subheader(
+        "Analysis History Dashboard"
+    )
+
+    history_chart = (
+        performance_dashboard()
+    )
+
+    if history_chart:
+        st.plotly_chart(
+            history_chart,
+            use_container_width=True
+        )
+    
     if st.button(
         "Generate PDF Report"
     ):
@@ -1126,23 +1160,38 @@ if uploaded_file:
             edu_score,
             impact,
             profile,
-            tech_score
+            tech_score,
+            datetime.now().strftime(
+                "%d-%m-%Y %H:%M"
+            )
         )
 
         st.success(
              "Report Generated"
         )
 
-    with open(
-        "report.pdf",
-        "rb"
-    ) as file:
+    import os
 
-        st.download_button(
-            "Download Report",
-            file,
-            file_name="Resume_Report.pdf"
-        )
+    if os.path.exists("report.pdf"):
+
+        with open(
+            "report.pdf",
+            "rb"
+        ) as file:
+
+            st.download_button(
+               "Download Report",
+                file,
+                file_name="Resume_Report.pdf"
+            )
+
+    st.sidebar.title(
+        "About Project"
+    )
+
+    st.sidebar.info(
+        project_info()
+    )
 
 
 

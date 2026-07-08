@@ -27,7 +27,8 @@ def generate_report(
     tech_score,
     shortlist,
     top3,
-    candidate_count
+    candidate_count,
+    analysis_date
 ):
 
     pdf = SimpleDocTemplate(
@@ -242,6 +243,13 @@ def generate_report(
     content.append(
         Paragraph(
             f"Candidates Analyzed: {candidate_count}",
+            styles["BodyText"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"Generated On: {analysis_date}",
             styles["BodyText"]
         )
     )
