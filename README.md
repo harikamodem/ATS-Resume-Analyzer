@@ -471,16 +471,3 @@ Potential extensions include:
 * Explainable AI visualizations for scoring decisions.
 
 ---
-
-## 👩‍💻 Author
-
-**Harika Modem**
-Mechanical Engineering Undergraduate, IIT Kanpur
-
-GitHub: [harikamodem](https://github.com/harikamodem)
-
----
-
-## 📄 License
-
-This project is intended for educational and portfolio purposes.
