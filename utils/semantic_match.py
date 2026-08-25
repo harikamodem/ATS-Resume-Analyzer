@@ -1,14 +1,11 @@
-from sentence_transformers import (
-    SentenceTransformer
+from utils.model_cache import (
+    load_model
 )
-
 from sklearn.metrics.pairwise import (
     cosine_similarity
 )
 
-model = SentenceTransformer(
-    "all-MiniLM-L6-v2"
-)
+model = load_model()
 
 def semantic_match(
         resume_text,
